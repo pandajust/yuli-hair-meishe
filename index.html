@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>屿理 Hair 美舍 · 一屿一区 一型一容颜</title>
+<meta name="description" content="屿理 Hair 美舍 — 专业设计师一对一专属设计，无推销无隐形消费，根据脸型私人定制，效果不满意7天免费调整。">
+<style>
+  :root{
+    --ink:#0a0a0a; --ink-soft:#1a1a1a;
+    --paper:#f5f3ee; --paper-soft:#ebe8e0;
+    --mute:#8a8578; --line:rgba(10,10,10,.12);
+    --gold:#b89968; --gold-soft:#d4bc8c; --gold-glow:rgba(184,153,104,.4);
+    --white:#ffffff;
+    --maxw:1280px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --ease-out:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--paper);color:var(--ink);line-height:1.7;
+    overflow-x:hidden;
+  }
+  .serif{font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif}
+  a{color:inherit;text-decoration:none} img{display:block;max-width:100%}
+  button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+  ::-webkit-scrollbar{width:8px}
+  ::-webkit-scrollbar-track{background:var(--paper)}
+  ::-webkit-scrollbar-thumb{background:var(--ink-soft);border-radius:4px}
+
+  /* ============ 导航 ============ */
+  .nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 48px;transition:all .5s var(--ease);
+    mix-blend-mode:difference;color:#fff;
+  }
+  .nav.scrolled{
+    background:rgba(245,243,238,.88);backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);mix-blend-mode:normal;
+    color:var(--ink);padding:14px 48px;box-shadow:0 1px 0 var(--line);
+  }
+  .nav-brand{font-size:22px;font-weight:600;letter-spacing:2px;display:flex;align-items:center;gap:10px}
+  .nav-brand .dot{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+  .nav-links{display:flex;gap:34px}
+  .nav-links a{font-size:14px;letter-spacing:1px;position:relative;padding:4px 0;transition:color .3s}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:1px;background:currentColor;transition:width .4s var(--ease)}
+  .nav-links a:hover::after{width:100%}
+  .nav-cta{padding:9px 22px;border:1px solid currentColor;border-radius:2px;font-size:13px;letter-spacing:2px;transition:all .35s var(--ease)}
+  .nav-cta:hover{background:var(--ink);color:var(--paper)}
+  .nav.scrolled .nav-cta:hover{background:var(--ink);color:var(--paper)}
+
+  /* ============ Hero（单图 + 多层交互） ============ */
+  .hero{
+    position:relative;height:100vh;min-height:680px;overflow:hidden;background:var(--ink);
+    cursor:none; /* 自定义光标 */
+  }
+  @media (hover:none){ .hero{cursor:auto} }
+
+  /* 背景层：鼠标视差 + 滚动视差 */
+  .hero-bg{
+    position:absolute;inset:-30px; /* 扩大范围防边缘 */
+    background:url('images/promo-custom.jpg') center/cover no-repeat;
+    transform:scale(1.08) translate3d(0,0,0);
+    filter:brightness(.42) saturate(.9);
+    will-change:transform;
+    transition:filter .8s;
+  }
+  .hero-bg.bright{filter:brightness(.55) saturate(1)}
+
+  /* 遮罩渐变 */
+  .hero::after{
+    content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      linear-gradient(180deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,.2) 40%,rgba(0,0,0,.75) 100%),
+      radial-gradient(ellipse at 30% 40%,rgba(184,153,104,.15),transparent 55%);
+  }
+
+  /* 山脉 SVG 装饰层（随视差轻微飘） */
+  .hero-mountains{
+    position:absolute;bottom:0;left:0;right:0;z-index:2;pointer-events:none;
+    height:40%;will-change:transform;
+  }
+
+  /* 金色光晕（跟随鼠标） */
+  .hero-glow{
+    position:absolute;width:520px;height:520px;border-radius:50%;
+    background:radial-gradient(circle,rgba(184,153,104,.22) 0%,rgba(184,153,104,.08) 40%,transparent 70%);
+    pointer-events:none;z-index:2;mix-blend-mode:screen;
+    transform:translate(-50%,-50%);will-change:transform;
+    left:50%;top:50%;opacity:.9;
+  }
+
+  /* 自定义光标 */
+  .hero-cursor{
+    position:absolute;width:36px;height:36px;border-radius:50%;
+    border:1.5px solid var(--gold-soft);
+    pointer-events:none;z-index:10;mix-blend-mode:screen;
+    transform:translate(-50%,-50%);
+    transition:transform .15s ease, width .3s, height .3s, border-color .3s;
+    will-change:transform;
+  }
+  .hero-cursor.dot{width:6px;height:6px;background:var(--gold);border:none}
+
+  /* Hero 内容 */
+  .hero-content{
+    position:relative;z-index:5;height:100%;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;color:#fff;padding:0 24px;
+  }
+  .hero-kicker{
+    font-size:13px;letter-spacing:8px;opacity:0;
+    transform:translateY(20px);animation:rise .9s .2s var(--ease-out) forwards;
+    color:var(--gold-soft);margin-bottom:28px;
+  }
+  .hero-title{
+    font-size:clamp(56px,11vw,150px);line-height:.95;font-weight:300;
+    letter-spacing:.02em;opacity:0;transform:translateY(30px);
+    animation:rise 1s .4s var(--ease-out) forwards;
+  }
+  .hero-title .hair{
+    font-family:"Helvetica Neue",Arial,sans-serif;font-weight:200;
+    font-style:italic;color:var(--gold-soft);margin:0 .18em;
+  }
+  .hero-sub{
+    margin-top:30px;font-size:clamp(15px,1.6vw,19px);letter-spacing:6px;
+    opacity:0;transform:translateY(20px);
+    animation:rise 1s .6s var(--ease-out) forwards;color:rgba(255,255,255,.85);
+  }
+  .hero-sub .sep{margin:0 18px;opacity:.5}
+  .hero-actions{
+    margin-top:48px;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;
+    opacity:0;transform:translateY(20px);
+    animation:rise 1s .8s var(--ease-out) forwards;
+  }
+
+  /* 侧边品牌文字（竖排） */
+  .hero-side{
+    position:absolute;top:50%;transform:translateY(-50%);z-index:4;
+    writing-mode:vertical-rl;text-orientation:mixed;
+    font-size:11px;letter-spacing:6px;color:rgba(255,255,255,.35);
+    height:auto;
+  }
+  .hero-side.left{left:28px}
+  .hero-side.right{right:28px}
+
+  /* 底部信息栏 */
+  .hero-foot{
+    position:absolute;bottom:30px;left:0;right:0;z-index:4;
+    display:flex;justify-content:space-between;align-items:flex-end;padding:0 48px;
+  }
+  .hero-foot .hf-left{color:rgba(255,255,255,.55);font-size:12px;letter-spacing:3px;display:flex;align-items:center;gap:14px}
+  .hero-foot .hf-left::before{content:"";width:34px;height:1px;background:var(--gold)}
+  .hero-foot .hf-center{color:rgba(255,255,255,.4);font-size:11px;letter-spacing:2px;text-align:center}
+  .hero-foot .hf-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .hero-foot .hf-right .hf-num{color:var(--gold-soft);font-size:22px;font-weight:200;font-family:"Helvetica Neue",sans-serif}
+  .hero-foot .hf-right .hf-lbl{color:rgba(255,255,255,.45);font-size:10px;letter-spacing:3px;text-transform:uppercase}
+
+  .btn{padding:16px 40px;font-size:14px;letter-spacing:3px;border-radius:2px;transition:all .4s var(--ease);display:inline-flex;align-items:center;gap:10px}
+  .btn-primary{background:var(--gold);color:var(--ink)}
+  .btn-primary:hover{background:var(--gold-soft);transform:translateY(-3px);box-shadow:0 14px 30px rgba(184,153,104,.4)}
+  .btn-ghost{border:1px solid rgba(255,255,255,.6);color:#fff}
+  .btn-ghost:hover{background:#fff;color:var(--ink);border-color:#fff}
+  .btn .arr{transition:transform .3s} .btn:hover .arr{transform:translateX(4px)}
+
+  @keyframes rise{to{opacity:1;transform:translateY(0)}}
+  @keyframes mountainWave{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+  /* ============ 通用 ============ */
+  section{padding:120px 48px;position:relative}
+  .container{max-width:var(--maxw);margin:0 auto}
+  .sec-head{text-align:center;margin-bottom:80px}
+  .sec-eyebrow{font-size:12px;letter-spacing:6px;color:var(--gold);text-transform:uppercase;margin-bottom:18px}
+  .sec-title{font-size:clamp(34px,4.5vw,56px);font-weight:300;letter-spacing:.04em;line-height:1.2}
+  .sec-title em{font-style:normal;color:var(--gold);font-weight:400}
+  .sec-desc{max-width:620px;margin:22px auto 0;color:var(--mute);font-size:15px}
+  .reveal{opacity:0;transform:translateY(40px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out)}
+  .reveal.in{opacity:1;transform:translateY(0)}
+  .reveal-delay-1{transition-delay:.12s} .reveal-delay-2{transition-delay:.24s}
+  .reveal-delay-3{transition-delay:.36s} .reveal-delay-4{transition-delay:.48s}
+
+  /* ============ 理念（左右双海报式） ============ */
+  .philosophy{background:var(--ink);color:#fff;overflow:hidden}
+  .philosophy-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:60px;align-items:center}
+  .philo-visual{position:relative}
+  .philo-img-wrap{position:relative;overflow:hidden;border-radius:2px}
+  .philo-img-wrap img{width:100%;height:700px;object-fit:cover;transition:transform 1.6s var(--ease-out),filter .6s}
+  .philo-img-wrap:hover img{transform:scale(1.05);filter:brightness(1.1)}
+  .philo-badge{
+    position:absolute;bottom:-26px;left:-26px;background:var(--gold);color:var(--ink);
+    padding:22px 28px;border-radius:2px;box-shadow:0 20px 50px rgba(184,153,104,.35);
+  }
+  .philo-badge .num{font-size:36px;font-weight:300;line-height:1;font-family:"Helvetica Neue",sans-serif}
+  .philo-badge .lbl{font-size:11px;letter-spacing:3px;margin-top:6px;text-transform:uppercase}
+
+  .philo-text .tag{font-size:12px;letter-spacing:6px;color:var(--gold);margin-bottom:22px;text-transform:uppercase}
+  .philo-text h2{font-size:clamp(32px,4vw,52px);font-weight:300;line-height:1.25;margin-bottom:28px}
+  .philo-text p{color:rgba(255,255,255,.65);font-size:15.5px;margin-bottom:16px;max-width:520px}
+  .philo-features{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .philo-feat{
+    display:flex;align-items:flex-start;gap:14px;padding:20px;border:1px solid rgba(255,255,255,.08);
+    border-radius:2px;transition:all .4s var(--ease);background:rgba(255,255,255,.02);
+  }
+  .philo-feat:hover{border-color:rgba(184,153,104,.5);background:rgba(184,153,104,.05);transform:translateY(-4px)}
+  .philo-feat .ic{
+    width:38px;height:38px;flex-shrink:0;border-radius:50%;
+    border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;
+    color:var(--gold);transition:all .4s;
+  }
+  .philo-feat:hover .ic{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+  .philo-feat .t{font-size:14px;color:rgba(255,255,255,.85);line-height:1.5}
+  .philo-feat .t b{color:#fff;font-weight:500}
+
+  /* ============ 山形分隔 ============ */
+  .mountain-divider{
+    height:140px;background:var(--ink);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 140' preserveAspectRatio='none'><path d='M0,140 L0,100 L180,50 L340,85 L500,30 L660,75 L820,40 L980,85 L1140,45 L1280,70 L1440,55 L1440,140 Z' fill='%23f5f3ee'/></svg>");
+    background-size:cover;background-position:center;
+  }
+
+  /* ============ 服务 ============ */
+  .services{background:var(--paper);color:var(--ink)}
+  .service-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+  .service-card{
+    position:relative;padding:42px 28px;border-radius:2px;
+    background:#fff;border:1px solid var(--line);
+    overflow:hidden;transition:all .5s var(--ease);
+  }
+  .service-card::before{
+    content:"";position:absolute;top:0;left:0;width:100%;height:3px;
+    background:linear-gradient(90deg,var(--gold),var(--gold-soft));
+    transform:scaleX(0);transform-origin:left;transition:transform .5s var(--ease);
+  }
+  .service-card:hover{transform:translateY(-10px);box-shadow:0 30px 60px -30px rgba(0,0,0,.2);border-color:transparent}
+  .service-card:hover::before{transform:scaleX(1)}
+  .service-card .idx{font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:20px;font-family:"Helvetica Neue",sans-serif;font-weight:300}
+  .service-card h3{font-size:22px;font-weight:400;margin-bottom:14px;letter-spacing:1px;color:var(--ink)}
+  .service-card p{font-size:13.5px;color:#777;line-height:1.8}
+  .service-card .ln{
+    margin-top:22px;font-size:12px;letter-spacing:2px;color:var(--gold);
+    display:inline-flex;align-items:center;gap:8px;opacity:0;transform:translateX(-10px);transition:all .4s;
+  }
+  .service-card:hover .ln{opacity:1;transform:translateX(0)}
+
+  /* ============ 承诺 ============ */
+  .promise{background:var(--paper-soft)}
+  .promise-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+  .promise-card{
+    background:#fff;padding:48px 34px;text-align:center;border-radius:2px;
+    transition:all .5s var(--ease);border:1px solid transparent;position:relative;overflow:hidden;
+  }
+  .promise-card::before{
+    content:"";position:absolute;top:-80%;left:-80%;width:160%;height:160%;
+    background:radial-gradient(circle,rgba(184,153,104,.08),transparent 55%);
+    opacity:0;transition:opacity .5s;
+  }
+  .promise-card:hover{transform:translateY(-6px);border-color:var(--gold);box-shadow:0 30px 60px -30px rgba(184,153,104,.35)}
+  .promise-card:hover::before{opacity:1}
+  .promise-ic{width:70px;height:70px;margin:0 auto 22px;border-radius:50%;background:var(--paper-soft);display:flex;align-items:center;justify-content:center;color:var(--gold);transition:all .5s}
+  .promise-card:hover .promise-ic{background:var(--gold);color:var(--ink);transform:rotateY(180deg)}
+  .promise-card h3{font-size:22px;font-weight:500;margin-bottom:12px}
+  .promise-card p{color:var(--mute);font-size:14px;line-height:1.8}
+
+  /* ============ 画廊（仅实景） ============ */
+  .gallery{background:#fff}
+  .gallery-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .g-item{position:relative;overflow:hidden;cursor:pointer;background:#f0eeea}
+  .g-big{height:820px}
+  .g-small{height:820px}
+  .g-item img{width:100%;height:100%;object-fit:cover;transition:transform 1.4s var(--ease-out)}
+  .g-item:hover img{transform:scale(1.06)}
+  .g-caption{
+    position:absolute;bottom:0;left:0;right:0;padding:36px 40px 32px;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.85));
+    color:#fff;transition:all .4s;
+  }
+  .g-caption .gc-t{font-size:24px;letter-spacing:2px;font-weight:300;margin-bottom:6px}
+  .g-caption .gc-s{font-size:11px;letter-spacing:5px;color:var(--gold-soft);text-transform:uppercase}
+  .g-overlay-icon{
+    position:absolute;top:26px;right:26px;width:46px;height:46px;border-radius:50%;
+    background:rgba(255,255,255,.12);backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;color:#fff;
+    opacity:0;transform:scale(.5);transition:all .4s var(--ease);
+  }
+  .g-item:hover .g-overlay-icon{opacity:1;transform:scale(1)}
+  .g-item .g-caption .arrow-tag{
+    display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:12px;letter-spacing:2px;
+    color:rgba(255,255,255,.7);opacity:0;transform:translateY(10px);transition:all .4s .1s;
+  }
+  .g-item:hover .g-caption .arrow-tag{opacity:1;transform:translateY(0)}
+
+  /* 灯箱 */
+  .lightbox{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;padding:40px;opacity:0;transition:opacity .3s}
+  .lightbox.active{display:flex;opacity:1}
+  .lightbox img{max-width:92vw;max-height:86vh;border-radius:2px;box-shadow:0 40px 100px rgba(0,0,0,.6)}
+  .lb-close{position:absolute;top:28px;right:28px;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;transition:all .3s}
+  .lb-close:hover{background:rgba(255,255,255,.25);transform:rotate(90deg)}
+  .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;transition:all .3s}
+  .lb-nav:hover{background:rgba(255,255,255,.25)}
+  .lb-prev{left:30px} .lb-next{right:30px}
+  .lb-counter{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:13px;letter-spacing:2px}
+
+  /* ============ 数据统计 ============ */
+  .stats{background:var(--ink);color:#fff;padding:90px 48px;position:relative;overflow:hidden}
+  .stats::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(184,153,104,.12),transparent 60%)}
+  .stats-grid{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+  .stat .num{font-size:clamp(42px,5.5vw,72px);font-weight:200;color:var(--gold);line-height:1;font-family:"Helvetica Neue",sans-serif}
+  .stat .lbl{margin-top:14px;font-size:12px;letter-spacing:4px;color:rgba(255,255,255,.55);text-transform:uppercase}
+
+  /* ============ CTA ============ */
+  .cta{background:linear-gradient(135deg,#1a1a1a 0%,#0a0a0a 100%);color:#fff;position:relative;overflow:hidden}
+  .cta::before{
+    content:"";position:absolute;right:-30%;top:-20%;width:60%;height:140%;
+    background:radial-gradient(ellipse at center,rgba(184,153,104,.08),transparent 60%);
+    pointer-events:none;
+  }
+  .cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative}
+  .cta-text h2{font-size:clamp(34px,4.2vw,54px);font-weight:300;line-height:1.25;margin-bottom:24px}
+  .cta-text h2 em{font-style:normal;color:var(--gold)}
+  .cta-text p{color:rgba(255,255,255,.65);font-size:16px;margin-bottom:36px;max-width:460px}
+  .cta-info{display:flex;flex-direction:column;gap:22px}
+  .cta-row{display:flex;align-items:flex-start;gap:16px;color:rgba(255,255,255,.85);font-size:15px;line-height:1.6}
+  .cta-row .ic{color:var(--gold);width:20px;text-align:center;flex-shrink:0;margin-top:4px}
+  .cta-row.address .addr-line .addr-text{color:#fff;font-size:15px}
+  .cta-row.address .nav-btns{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .cta-row.address .nav-btns a{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:12px;letter-spacing:1px;border:1px solid rgba(255,255,255,.25);border-radius:2px;color:rgba(255,255,255,.8);transition:all .3s}
+  .cta-row.address .nav-btns a:hover{background:rgba(184,153,104,.2);border-color:var(--gold);color:#fff}
+  .cta-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:40px;backdrop-filter:blur(10px)}
+  .cta-card h3{font-size:22px;font-weight:400;margin-bottom:8px}
+  .cta-card .hint{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:28px}
+  .cta-btns{display:flex;flex-direction:column;gap:14px}
+  .btn-block{width:100%;justify-content:center;padding:18px;font-size:15px;letter-spacing:2px}
+  .btn-meituan{background:linear-gradient(135deg,#ffd100,#ffb800);color:#0a0a0a;font-weight:600}
+  .btn-meituan:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(255,209,0,.3)}
+  .btn-dark-ghost{border:1px solid rgba(255,255,255,.3);color:#fff}
+  .btn-dark-ghost:hover{background:rgba(255,255,255,.1);border-color:#fff}
+
+  /* ============ 页脚 ============ */
+  footer{background:var(--ink);color:rgba(255,255,255,.6);padding:50px 48px 30px;border-top:1px solid rgba(255,255,255,.08)}
+  .foot-grid{max-width:var(--maxw);margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+  .foot-brand{font-size:20px;color:#fff;letter-spacing:2px;font-weight:500}
+  .foot-tag{font-size:12px;letter-spacing:3px;margin-top:6px}
+  .foot-copy{font-size:13px;color:rgba(255,255,255,.4)}
+
+  /* 回到顶部 */
+  .to-top{position:fixed;bottom:30px;right:30px;width:48px;height:48px;border-radius:50%;background:var(--ink);color:#fff;z-index:90;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:all .4s var(--ease);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .to-top.show{opacity:1;pointer-events:auto}
+  .to-top:hover{background:var(--gold);color:var(--ink);transform:translateY(-4px)}
+
+  /* ============ 响应式 ============ */
+  @media (max-width:960px){
+    section{padding:80px 24px}
+    .nav{padding:16px 20px} .nav.scrolled{padding:12px 20px}
+    .nav-links,.nav-cta{display:none}
+    .hero{cursor:auto} .hero-cursor,.hero-glow{display:none}
+    .hero-side{display:none}
+    .hero-foot{padding:0 24px;bottom:20px;flex-direction:column;gap:12px;align-items:center;text-align:center}
+    .hero-foot .hf-left,.hero-foot .hf-right{align-items:center;flex-direction:column}
+    .philosophy-grid{grid-template-columns:1fr;gap:50px}
+    .philo-img-wrap img{height:420px}
+    .philo-badge{left:50%;transform:translateX(-50%);bottom:-20px;padding:16px 22px;text-align:center}
+    .service-grid{grid-template-columns:repeat(2,1fr)}
+    .promise-grid{grid-template-columns:1fr}
+    .gallery-grid{grid-template-columns:1fr}
+    .g-big,.g-small{height:380px}
+    .philo-features{grid-template-columns:1fr}
+    .stats-grid{grid-template-columns:repeat(2,1fr);gap:40px}
+    .cta-grid{grid-template-columns:1fr;gap:40px}
+  }
+  @media (max-width:560px){
+    .service-grid{grid-template-columns:1fr}
+    .hero-sub .sep{display:none}
+    .hero-sub{display:flex;flex-direction:column;gap:8px}
+    .btn{padding:14px 28px;font-size:13px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important} html{scroll-behavior:auto}
+    .hero{cursor:auto} .hero-cursor,.hero-glow{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- 导航 -->
+<nav class="nav" id="nav">
+  <div class="nav-brand serif">屿理 <span style="font-style:italic;font-weight:300">Hair</span> 美舍<span class="dot"></span></div>
+  <div class="nav-links">
+    <a href="#philosophy">理念</a>
+    <a href="#services">服务</a>
+    <a href="#gallery">实景</a>
+    <a href="#promise">承诺</a>
+    <a href="#contact">联系</a>
+  </div>
+  <a href="#contact" class="nav-cta">立即预约</a>
+</nav>
+
+<!-- Hero -->
+<header class="hero" id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <svg class="hero-mountains" viewBox="0 0 1440 300" preserveAspectRatio="none">
+    <path d="M0,300 L0,180 L160,100 L300,140 L460,70 L620,130 L780,80 L940,140 L1100,90 L1260,130 L1440,100 L1440,300 Z" fill="rgba(10,10,10,.7)" style="animation:mountainWave 8s ease-in-out infinite"/>
+    <path d="M0,300 L0,220 L220,180 L380,210 L540,160 L700,200 L860,170 L1020,200 L1180,175 L1440,210 L1440,300 Z" fill="rgba(10,10,10,.5)" style="animation:mountainWave 10s ease-in-out infinite reverse"/>
+  </svg>
+  <div class="hero-glow" id="heroGlow"></div>
+  <div class="hero-cursor" id="heroCursor"></div>
+
+  <!-- 侧边文字 -->
+  <div class="hero-side left serif">一屿一区 · 一型一容颜</div>
+  <div class="hero-side right">HAIR SALON · AWAKENING BEAUTY</div>
+
+  <div class="hero-content">
+    <div class="hero-kicker">HAIR SALON · SINCE 2024</div>
+    <h1 class="hero-title serif">屿理<span class="hair">Hair</span>美舍</h1>
+    <div class="hero-sub serif">一屿一区<span class="sep">·</span>一型一容颜</div>
+    <div class="hero-actions">
+      <a href="#contact" class="btn btn-primary">预约造型 <span class="arr">→</span></a>
+      <a href="#gallery" class="btn btn-ghost">实景展示</a>
+    </div>
+  </div>
+
+  <div class="hero-foot">
+    <div class="hf-left">SCROLL · EXPLORE</div>
+    <div class="hf-center">唤醒全新染烫理念</div>
+    <div class="hf-right">
+      <span class="hf-num serif">01</span>
+      <span class="hf-lbl">/ AWAKENING</span>
+    </div>
+  </div>
+</header>
+
+<!-- 理念 -->
+<section class="philosophy" id="philosophy">
+  <div class="container">
+    <div class="philosophy-grid">
+      <div class="philo-visual reveal">
+        <div class="philo-img-wrap">
+          <img src="images/storefront.jpg" alt="屿理美舍门头" />
+        </div>
+        <div class="philo-badge">
+          <div class="num serif">7<span style="font-size:20px;font-weight:400">天</span></div>
+          <div class="lbl">FREE ADJUSTMENT</div>
+        </div>
+      </div>
+      <div class="philo-text">
+        <div class="tag reveal">— BRAND PHILOSOPHY —</div>
+        <h2 class="serif reveal reveal-delay-1">拒绝千篇一律<br/>根据脸型<em style="color:var(--gold);font-style:normal">私人定制</em></h2>
+        <p class="reveal reveal-delay-2">屿理 Hair 美舍，以"岛"为名，取一隅静谧之地，为每一位来客雕琢独属的发型语言。我们相信，真正的美从不复制，而是基于你的脸型、气质与生活方式，唤醒全新的染烫理念。</p>
+        <p class="reveal reveal-delay-2">专业设计师一对一专属服务，从沟通、设计到造型，全程深度参与，让每一次改变都成为一次自我的重新定义。</p>
+        <div class="philo-features">
+          <div class="philo-feat reveal reveal-delay-3">
+            <div class="ic">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="t"><b>定制造型</b><br/>依据脸型与气质专属设计</div>
+          </div>
+          <div class="philo-feat reveal reveal-delay-3">
+            <div class="ic">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <div class="t"><b>专业技术</b><br/>资深设计师团队操刀</div>
+          </div>
+          <div class="philo-feat reveal reveal-delay-4">
+            <div class="ic">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </div>
+            <div class="t"><b>品质服务</b><br/>甄选高端洗护与烫染产品</div>
+          </div>
+          <div class="philo-feat reveal reveal-delay-4">
+            <div class="ic">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="t"><b>7天保障</b><br/>效果不满意免费调整</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 山形分隔 -->
+<div class="mountain-divider"></div>
+
+<!-- 服务 -->
+<section class="services" id="services">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">OUR SERVICES</div>
+      <h2 class="sec-title serif">全方位<em>造型服务</em></h2>
+      <p class="sec-desc">从基础剪护到深度染烫，屿理为你提供一站式专业美发解决方案</p>
+    </div>
+    <div class="service-grid">
+      <div class="service-card reveal reveal-delay-1">
+        <div class="idx">01</div>
+        <h3>剪裁设计</h3>
+        <p>根据脸型、头型与发质，量身定制专属发型，层次分明，易于日常打理。</p>
+        <span class="ln">了解更多 →</span>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="idx">02</div>
+        <h3>时尚染发</h3>
+        <p>甄选国际品牌染膏，从自然黑茶到潮流亮色，呈现健康光泽与持久色彩。</p>
+        <span class="ln">了解更多 →</span>
+      </div>
+      <div class="service-card reveal reveal-delay-3">
+        <div class="idx">03</div>
+        <h3>精致烫护</h3>
+        <p>唤醒全新染烫理念，兼顾造型与发质健康，打造自然灵动的卷曲弧度。</p>
+        <span class="ln">了解更多 →</span>
+      </div>
+      <div class="service-card reveal reveal-delay-4">
+        <div class="idx">04</div>
+        <h3>头皮养护</h3>
+        <p>专业头皮检测与深层护理，从根源改善发质，让秀发由内而外焕发生机。</p>
+        <span class="ln">了解更多 →</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 承诺 -->
+<section class="promise" id="promise">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">OUR PROMISE</div>
+      <h2 class="sec-title serif">我们的<em>三大承诺</em></h2>
+      <p class="sec-desc">透明、真诚、负责，让每一次到店都安心无忧</p>
+    </div>
+    <div class="promise-grid">
+      <div class="promise-card reveal reveal-delay-1">
+        <div class="promise-ic">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+        </div>
+        <h3>无推销</h3>
+        <p>全程无强制推销，尊重你的每一个选择，让造型回归纯粹的体验本身。</p>
+      </div>
+      <div class="promise-card reveal reveal-delay-2">
+        <div class="promise-ic">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <h3>无隐形消费</h3>
+        <p>价格公开透明，项目明码标价，到店前即可知晓全部费用，绝无附加。</p>
+      </div>
+      <div class="promise-card reveal reveal-delay-3">
+        <div class="promise-ic">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <h3>7天免费调整</h3>
+        <p>效果不满意？7天内可免费到店调整，直至你满意为止，为美丽负责到底。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 画廊 -->
+<section class="gallery" id="gallery">
+  <div class="sec-head reveal" style="padding-top:80px">
+    <div class="sec-eyebrow">OUR GALLERY</div>
+    <h2 class="sec-title serif">店铺<em>实景展示</em></h2>
+    <p class="sec-desc">点击图片查看大图 · 沉浸式感受屿理的空间美学</p>
+  </div>
+  <div class="gallery-grid">
+    <div class="g-item g-big reveal" data-idx="0">
+      <img src="images/promo-no-sales.jpg" alt="店铺实景">
+      <div class="g-overlay-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      </div>
+      <div class="g-caption">
+        <div class="gc-t serif">无推销 · 无隐形消费</div>
+        <div class="gc-s">Honest Service · Zero Pressure</div>
+        <div class="arrow-tag">VIEW LARGER →</div>
+      </div>
+    </div>
+    <div class="g-item g-small reveal reveal-delay-1" data-idx="1">
+      <img src="images/promo-custom.jpg" alt="店铺实景">
+      <div class="g-overlay-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      </div>
+      <div class="g-caption">
+        <div class="gc-t serif">私人定制 · 拒绝千篇一律</div>
+        <div class="gc-s">Custom Design · Face-Shape Fit</div>
+        <div class="arrow-tag">VIEW LARGER →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 数据 -->
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat reveal">
+        <div class="num" data-target="100" data-suffix="%">0</div>
+        <div class="lbl">Satisfaction</div>
+      </div>
+      <div class="stat reveal reveal-delay-1">
+        <div class="num" data-target="7" data-suffix="天">0</div>
+        <div class="lbl">Free Adjust</div>
+      </div>
+      <div class="stat reveal reveal-delay-2">
+        <div class="num" data-target="1" data-suffix="v1" style="font-size:44px">0</div>
+        <div class="lbl">Exclusive</div>
+      </div>
+      <div class="stat reveal reveal-delay-3">
+        <div class="num" data-target="0" data-suffix="推销">0</div>
+        <div class="lbl">Transparent</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA 联系 -->
+<section class="cta" id="contact">
+  <div class="container">
+    <div class="cta-grid">
+      <div class="cta-text">
+        <div class="sec-eyebrow" style="text-align:left;margin-bottom:18px">BOOK NOW</div>
+        <h2 class="serif">来屿理<br/>遇见<em>更美的自己</em></h2>
+        <p>无论你想尝试全新的发色，还是换一个更适合自己的发型，屿理 Hair 美舍的专业设计师都已准备好为你服务。现在预约，开启你的专属造型之旅。</p>
+        <div class="cta-info">
+          <div class="cta-row address">
+            <span class="ic">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </span>
+            <div class="addr-line">
+              <div class="addr-text">云南省曲靖市麒麟区学府路<br/>万乐城二期17-1-10号商铺</div>
+              <div class="nav-btns">
+                <a href="https://uri.amap.com/marker?position=103.796,25.487&name=屿理Hair美舍&src=yulihair&coordinate=gaode&callnative=1" target="_blank" rel="noopener">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  高德地图
+                </a>
+                <a href="https://map.baidu.com/search/屿理Hair美舍" target="_blank" rel="noopener">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  百度地图
+                </a>
+                <a href="https://maps.apple.com/?q=屿理Hair美舍&near=麒麟区学府路万乐城二期" target="_blank" rel="noopener">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  Apple Maps
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="cta-row">
+            <span class="ic">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            </span>
+            美团在线预约 · 即买即用
+          </div>
+          <div class="cta-row">
+            <span class="ic">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </span>
+            营业时间 · 10:00 - 21:30
+          </div>
+        </div>
+      </div>
+      <div class="cta-card reveal">
+        <h3 class="serif">立即预约</h3>
+        <div class="hint">选择以下方式，开启你的造型之旅</div>
+        <div class="cta-btns">
+          <a href="http://dpurl.cn/f3hbPGpz" target="_blank" rel="noopener" class="btn btn-meituan btn-block">美团预约 →</a>
+          <a href="https://uri.amap.com/marker?position=103.796,25.487&name=屿理Hair美舍&src=yulihair&coordinate=gaode&callnative=1" target="_blank" rel="noopener" class="btn btn-dark-ghost btn-block">查看路线导航</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 页脚 -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="foot-brand serif">屿理 Hair 美舍</div>
+      <div class="foot-tag">一屿一区 · 一型一容颜</div>
+    </div>
+    <div class="foot-copy">© 2026 屿理 Hair 美舍. 保留所有权利.</div>
+  </div>
+</footer>
+
+<!-- 回到顶部 -->
+<button class="to-top" id="toTop" aria-label="回到顶部">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
+
+<!-- 灯箱 -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">×</button>
+  <button class="lb-nav lb-prev" id="lbPrev">‹</button>
+  <img id="lbImg" src="" alt="">
+  <button class="lb-nav lb-next" id="lbNext">›</button>
+  <div class="lb-counter" id="lbCounter"></div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---- 导航 ---- */
+  const nav = document.getElementById('nav');
+  const toTop = document.getElementById('toTop');
+  const onScroll = () => {
+    const y = window.scrollY;
+    nav.classList.toggle('scrolled', y > 60);
+    toTop.classList.toggle('show', y > 500);
+
+    // Hero 背景滚动视差
+    const heroBg = document.getElementById('heroBg');
+    if (y < window.innerHeight) {
+      heroBg.style.transform = `scale(1.08) translate3d(0,${y * 0.25}px,0)`;
+    }
+  };
+  window.addEventListener('scroll', onScroll, {passive:true});
+  toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  /* ============ Hero 鼠标交互 ============ */
+  const hero = document.getElementById('hero');
+  const heroBg = document.getElementById('heroBg');
+  const heroGlow = document.getElementById('heroGlow');
+  const cursor = document.getElementById('heroCursor');
+  let curX = window.innerWidth/2, curY = window.innerHeight/2;
+  let targetX = curX, targetY = curY;
+
+  heroBg.style.backgroundImage = "url('images/promo-custom.jpg')";
+
+  hero.addEventListener('mousemove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    curX = e.clientX - rect.left;
+    curY = e.clientY - rect.top;
+
+    // 光晕跟随
+    heroGlow.style.left = curX + 'px';
+    heroGlow.style.top = curY + 'px';
+
+    // 光标跟随
+    cursor.style.left = curX + 'px';
+    cursor.style.top = curY + 'px';
+
+    // 背景视差（相对 hero 中心偏移）
+    const cx = rect.width / 2, cy = rect.height / 2;
+    const dx = (curX - cx) / cx; // -1 ~ 1
+    const dy = (curY - cy) / cy;
+    heroBg.style.transform = `scale(1.08) translate3d(${dx * -14}px,${dy * -10}px,0)`;
+  });
+
+  // 光标进入/离开 hero
+  hero.addEventListener('mouseenter', () => {
+    heroBg.classList.add('bright');
+    cursor.style.opacity = '1';
+  });
+  hero.addEventListener('mouseleave', () => {
+    heroBg.classList.remove('bright');
+    cursor.style.opacity = '0';
+    heroGlow.style.opacity = '0';
+  });
+  hero.addEventListener('mouseenter', () => { heroGlow.style.opacity = '.9' }, {once:true});
+
+  // 光标悬停按钮/链接时变成点
+  hero.addEventListener('mouseover', (e) => {
+    if (e.target.closest('a,button')) cursor.classList.add('dot');
+  });
+  hero.addEventListener('mouseout', (e) => {
+    if (e.target.closest('a,button')) cursor.classList.remove('dot');
+  });
+
+  // 光标平滑跟随（requestAnimationFrame）
+  function loop(){
+    targetX += (curX - targetX) * 0.18;
+    targetY += (curY - targetY) * 0.18;
+    if (cursor.style.opacity === '1') {
+      cursor.style.transform = `translate(${targetX}px,${targetY}px) translate(-50%,-50%)`;
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  /* ---- 滚动显现 ---- */
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.15, rootMargin:'0px 0px -60px 0px'});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* ---- 数字动画 ---- */
+  const nums = document.querySelectorAll('.stat .num');
+  const numIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const el = e.target;
+        const target = +el.dataset.target;
+        const suffix = el.dataset.suffix || '';
+        let cur = 0;
+        const step = Math.max(1, Math.ceil(target / 50));
+        const timer = setInterval(() => {
+          cur += step;
+          if (cur >= target) { cur = target; clearInterval(timer); }
+          el.textContent = cur + suffix;
+        }, 30);
+        numIO.unobserve(el);
+      }
+    });
+  }, {threshold:0.5});
+  nums.forEach(n => numIO.observe(n));
+
+  /* ---- 灯箱 ---- */
+  const images = ['images/promo-no-sales.jpg', 'images/promo-custom.jpg'];
+  const captions = ['无推销 · 无隐形消费', '私人定制 · 拒绝千篇一律'];
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lbImg');
+  const lbCounter = document.getElementById('lbCounter');
+  let curIdx = 0;
+
+  const openLB = (idx) => {
+    curIdx = idx;
+    lbImg.src = images[idx]; lbImg.alt = captions[idx];
+    lbCounter.textContent = `${idx + 1} / ${images.length}  ·  ${captions[idx]}`;
+    lightbox.classList.add('active'); document.body.style.overflow = 'hidden';
+  };
+  const closeLB = () => { lightbox.classList.remove('active'); document.body.style.overflow = ''; };
+  const prev = () => openLB((curIdx - 1 + images.length) % images.length);
+  const next = () => openLB((curIdx + 1) % images.length);
+
+  document.querySelectorAll('.g-item').forEach(item => {
+    item.addEventListener('click', () => openLB(+item.dataset.idx));
+  });
+  document.getElementById('lbClose').addEventListener('click', closeLB);
+  document.getElementById('lbPrev').addEventListener('click', prev);
+  document.getElementById('lbNext').addEventListener('click', next);
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLB(); });
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'Escape') closeLB();
+    if (e.key === 'ArrowLeft') prev();
+    if (e.key === 'ArrowRight') next();
+  });
+
+  /* ---- 平滑锚点 ---- */
+  document.querySelectorAll('.nav-links a, .hero-actions a, .btn-dark-ghost').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const href = a.getAttribute('href');
+      if (href && href.startsWith('#')) {
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    });
+  });
+
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,8 @@
+# 临时文件
+.uploads/
+.screenshots/
+*.tar.gz
+*.tgz
+.DS_Store
+node_modules/
+.netlify/
